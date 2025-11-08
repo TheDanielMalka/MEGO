@@ -41,8 +41,7 @@
 #
 # lst.clear() # מאפס את כל הרשימה על ידי מחיקת כל הערכים בתוכה
 # print(lst)
-
-
+import threading
 
 
 # my_dict = {'name': 'Sara', 'age': 30, 'city': 'Tel Aviv'}
@@ -312,3 +311,69 @@
 #             previous = len(item)
 #     return new
 # print(longest(lst))
+
+
+
+# lst = []
+# maximum = 0
+# index = 0
+# for i in range(1,6):
+#     lst.append(int(input("Enter num")))
+#     lst[i-1] *= i
+#     if maximum < lst[i-1]:
+#         maximum = lst[i-1]
+#         index = i
+# print(f"the list is : {lst} max num is : {maximum} his index is {index}")
+
+# lst2 = []
+# lst = []
+# for i in range(int(input("Enter list size"))):
+#     inp = int(input("Enter a num to append to the list"))
+#     lst.append(inp)
+#     lst2.append(inp)
+# counter = 1
+# for num in lst:
+#     num *= counter
+#     lst[counter-1] = num
+#     counter += 1
+# maximum = 0
+# maximum_num_index = 0
+# for i in range(len(lst)):
+#     if lst[i] > maximum:
+#         maximum = lst[i]
+#         maximum_num_index = i+1
+# print(f"Original list is: {lst2} \n"
+#       f"Doubled list: {lst} \n"
+#       f"Maximum number is: {maximum} \n"
+#       f"Maximum index is: {maximum_num_index}")
+#
+
+
+# def find_index(arr:list, var:int):
+#     for index in range(len(arr)):
+#         if arr[index] == var:
+#             return index
+#     return None
+# print(f"your var index is: {find_index([1,3,5,7,9],3)}")
+# print(f"your var index is: {find_index([1,3,5,7,9],10)}")
+
+#
+# lst = [11,33,5,6,2,4,6,8,9,55]
+# item=4
+# def shoki(lst,item):
+#     high=len(lst)-1
+#     low=0
+#     lst = sorted(lst)
+#     while low<=high:
+#         mid = (low+high)//2
+#         if lst[mid]==item:
+#             return mid
+#         elif lst[mid]<item:
+#             low=mid+1
+#             lst = lst[mid:]
+#         elif lst[mid]>item:
+#             high=mid-1
+#             lst = lst[:mid]
+#     else:
+#         return -1
+# print(shoki(lst,item))
