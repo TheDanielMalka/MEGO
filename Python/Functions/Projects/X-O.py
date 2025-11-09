@@ -72,13 +72,13 @@ def play_game():
     print("=" * 50)
     print(f"Starting player is: {current_player}")
 
-    while not check_winner(game_board) or not check_tie(game_board):
+    while not check_winner(game_board) and not check_tie(game_board):
         """" used this condition instead of 'while True:' so its be more readable"""
 
         display_board(game_board)
         rand = player_input(current_player)
 
-        while not check_winner(game_board) or not check_tie(game_board):
+        while not check_winner(game_board) and not check_tie(game_board):
             """" checks if the game board position empty if it does and 
             its in the range - fills it otherwise keep asking for 
              good position """
