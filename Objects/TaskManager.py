@@ -95,42 +95,43 @@ NewTaskManager = TaskManager(task_section)
 open_message()
 user_input = input("Enter your choice \n")
 
-while user_input.lower() != "exit":
-    if user_input.lower() == "add":
-        new_task = input("Enter your new task name \n")
-        NewTaskManager.add_task(new_task)
-        print(f"Task: {new_task} Added to the calendar")
-
-    elif user_input.lower() == "menu":
-        open_message()
-
-    elif user_input.lower() == "show":
-        NewTaskManager.show_tasks()
-
-    elif user_input.lower() == "mark":
-        print(f"Heres your tasks :\n")
-        NewTaskManager.show_tasks()
-        mark_the_task = int(input(f"Enter task number to be marked \n"))
-        try:
-            NewTaskManager.mark_done(mark_the_task)
-        except ValueError:
-            print("Must Enter Integer between")
-
-    elif user_input.lower() == "remove":
-        print(f"Heres your tasks :\n")
-        NewTaskManager.show_tasks()
-        remove_the_task = int(input(f"Enter task number to be removed or 999 to clear all \n"))
-        try:
-            NewTaskManager.remove_task(remove_the_task)
-        except ValueError:
-            print("Must Enter Integer between")
-
-    elif user_input.lower() == "save":
-        path = input("Enter your path to the file: \n")
-        NewTaskManager.save_to_file(path)
-
-    elif user_input.lower() == "load":
-        path = input("Enter your path to the file: \n")
-        NewTaskManager.load_from_file(path)
-    user_input = input("Enter your choice \n")
-print("GoodBye")
+if __name__ == "__main__":
+    while user_input.lower() != "exit":
+        if user_input.lower() == "add":
+            new_task = input("Enter your new task name \n")
+            NewTaskManager.add_task(new_task)
+            print(f"Task: {new_task} Added to the calendar")
+    
+        elif user_input.lower() == "menu":
+            open_message()
+    
+        elif user_input.lower() == "show":
+            NewTaskManager.show_tasks()
+    
+        elif user_input.lower() == "mark":
+            print(f"Heres your tasks :\n")
+            NewTaskManager.show_tasks()
+            mark_the_task = int(input(f"Enter task number to be marked \n"))
+            try:
+                NewTaskManager.mark_done(mark_the_task)
+            except ValueError:
+                print("Must Enter Integer between")
+    
+        elif user_input.lower() == "remove":
+            print(f"Heres your tasks :\n")
+            NewTaskManager.show_tasks()
+            remove_the_task = int(input(f"Enter task number to be removed or 999 to clear all \n"))
+            try:
+                NewTaskManager.remove_task(remove_the_task)
+            except ValueError:
+                print("Must Enter Integer between")
+    
+        elif user_input.lower() == "save":
+            path = input("Enter your path to the file: \n")
+            NewTaskManager.save_to_file(path)
+    
+        elif user_input.lower() == "load":
+            path = input("Enter your path to the file: \n")
+            NewTaskManager.load_from_file(path)
+        user_input = input("Enter your choice \n")
+    print("GoodBye")
