@@ -9,8 +9,8 @@ class Opens:
               f"For <write> type write\n"
               f"For <append> type append\n"
               f"For <clear> type clear\n"
-              f"For <exit> type exit\n"
-              f"For <copy> type copy\n")
+              f"For <copy> type copy\n"
+              f"For <exit> type exit\n")
 
     def write(self,text):
         st = open(self.path,'w')
@@ -64,6 +64,7 @@ MyFile.opening()
 user_inpt = input("Enter your request: ")
 
 while True:
+    try:
         if user_inpt == "exit":
             print("Exiting program.")
             break
@@ -162,11 +163,12 @@ while True:
             print(f"Biggest integer is {biggest} appeared {biggest_appeared} times. \n"
                   f"Smallest integer is {smallest} appeared {smallest_appeared} times. ")
 
-
+        elif user_inpt == "menu":
+            MyFile.opening()
         else:
             print("Invalid input.")
 
-        MyFile.opening()
+        print(f"For <menu> type menu\n")
         user_inpt = input("Enter your request: ")
     except KeyboardInterrupt:
         print("Try Again.")
