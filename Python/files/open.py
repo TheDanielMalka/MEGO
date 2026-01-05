@@ -168,3 +168,7 @@ while True:
 
         MyFile.opening()
         user_inpt = input("Enter your request: ")
+    except KeyboardInterrupt:
+        print("Try Again.")
+    except ValueError:
+        print("Invalid input.")
