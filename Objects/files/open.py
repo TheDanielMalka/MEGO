@@ -4,7 +4,7 @@ class Opens:
         self.path = path
 
     def opening(self):
-        print(f"Welcome to {MyFile.path}\n"
+        print(f"Welcome to {self.path}\n"
               f"For <read> type read\n"
               f"For <write> type write\n"
               f"For <append> type append\n"
@@ -59,7 +59,7 @@ class Opens:
         st.close()
 
 counter = 0
-MyFile = Opens("C:/Users/shimo/MEGO/Python/files/dat1.txt")
+MyFile = Opens("C:/Users/shimo/MEGO/Objects/files/open.py")
 MyFile.opening()
 user_inpt = input("Enter your request: ")
 
@@ -106,7 +106,7 @@ while True:
             lowerCases = 0
             digits = 0
             specials = 0
-            MyFile2 = Opens("C:/Users/shimo/MEGO/Python/files/dat2.txt")
+            MyFile2 = Opens("/Objects/files/dat2.txt")
             check = MyFile2.read()
             for char in check:
                     if "a" <= char <= "z":
@@ -123,7 +123,7 @@ while True:
                   f"{specials} special characters added")
 
         elif user_inpt == "repeat":
-            MyFile2 = Opens("C:/Users/shimo/MEGO/Python/files/dat2.txt")
+            MyFile2 = Opens("/Objects/files/dat2.txt")
             file = MyFile2.read()
             while True:
                 repeat_counter = 0
@@ -139,7 +139,7 @@ while True:
                     break
 
         elif user_inpt == "50int":
-            MyFile5 = Opens("C:/Users/shimo/MEGO/Python/files/dat5.txt")
+            MyFile5 = Opens("/Objects/files/dat5.txt")
             ints = ''
             for i in range(5):
                 inp = input("Enter your Ints: ")
@@ -150,6 +150,7 @@ while True:
             smallest = int(readed_ints[0])
             biggest_appeared = 0
             smallest_appeared = 0
+
             for integer in readed_ints:
                 if int(integer) > biggest:
                     biggest = int(integer)
@@ -165,6 +166,7 @@ while True:
 
         elif user_inpt == "menu":
             MyFile.opening()
+
         else:
             print("Invalid input.")
 
