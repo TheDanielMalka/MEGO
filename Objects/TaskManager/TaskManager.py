@@ -30,6 +30,12 @@ class TaskManager:
             for i, task in enumerate(self.tasks, 1):
                 print(f"{i}. {task.task_name} | Priority: {task.priority} | Category: {task.category} | Created: {task.created_at}")
 
+    def sort_tasks(self) -> None:
+        """Sorts tasks by Priority first, and then by Created Date"""
+
+        self.tasks.sort(key=lambda task: (task.priority, task.created_at), reverse=True)
+        print("Tasks sorted by Priority and then by Date.")
+
     def add_task(self, task:object) -> None:
 
         """This function is adding a single task each time you execute her"""
@@ -151,24 +157,25 @@ class TaskManager:
 TaskManagerBank = TaskManager()
 TaskManagerBank.load_from_file("./TaskManager.txt")
 TaskManagerBank.open_message()
-user_input = input("Enter your choice \n")
+user_input = input("Enter your choice \n").strip().lower()
 
 if __name__ == "__main__":
-    while user_input.lower() != "exit":
+    while user_input != "exit":
 
-        if user_input.lower() == "menu":
-            TaskManager.open_message()
+        if user_input == "menu":
+            TaskManagerBank.open_message()
 
-        elif user_input.lower() == "show":
+        elif user_input == "show":
+            TaskManagerBank.sort_tasks()
             TaskManagerBank.show_tasks()
 
-        elif user_input.lower() == "add":
-            new_task = input("Enter your new task name \n")
+        elif user_input == "add":
+            new_task = input("Enter your new task name \n").strip()
             task_obj = dm.build_task(new_task)
             TaskManagerBank.add_task(task_obj)
             print(f"Task: '{task_obj.task_name}' Added! [Priority: {task_obj.priority}, Category: {task_obj.category}]")
 
-        elif user_input.lower() == "edit":
+        elif user_input == "edit":
             print(f"Heres your tasks :\n")
             TaskManagerBank.show_tasks()
             try:
@@ -181,7 +188,7 @@ if __name__ == "__main__":
             except ValueError:
                 print("You must enter a valid number")
 
-        elif user_input.lower() == "mark":
+        elif user_input == "mark":
             print(f"Heres your tasks :\n")
             TaskManagerBank.show_tasks()
             try:
@@ -190,7 +197,7 @@ if __name__ == "__main__":
             except ValueError:
                 print("You must enter a valid number")
 
-        elif user_input.lower() == "remove":
+        elif user_input == "remove":
             print(f"Heres your tasks :\n")
             TaskManagerBank.show_tasks()
             try:
@@ -199,12 +206,13 @@ if __name__ == "__main__":
             except ValueError:
                 print("You must enter a valid number")
 
-        elif user_input.lower() == "clear":
+        elif user_input == "clear":
             TaskManagerBank.clear_done_tasks()
             print("Done tasks have been cleared.")
 
-        elif user_input.lower() == "save":
+        elif user_input == "save":
+            TaskManagerBank.sort_tasks()
             TaskManagerBank.save_to_file('./TaskManager.txt')
 
-        user_input = input("Enter your choice \n")
+        user_input = input("Enter your choice \n").strip().lower()
     print("GoodBye")
