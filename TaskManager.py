@@ -1,12 +1,17 @@
 import data_models as dm
+import json
 
 class TaskManager:
+
+    """ Main task management class.
+       Handles task list operations: add, remove, edit, mark, save, load """
+
     def __init__(self):
         self.tasks:list = []
 
     def open_message(self) -> None:
 
-        """" This function is a main menu function """
+        """" Displays main menu with available commands. """
 
         print("Welcome to DM TaskManager 2.0\n"
               "our commands :\n"
@@ -22,7 +27,7 @@ class TaskManager:
 
     def show_tasks(self) -> None:
 
-        """This function shows the tasks that exist in you calendar"""
+        """This function displays all tasks with their details: name, priority, category, created date"""
 
         if len(self.tasks) == 0:
             print("No Tasks on the calendar")
@@ -30,9 +35,18 @@ class TaskManager:
             for i, task in enumerate(self.tasks, 1):
                 print(f"{i}. {task.task_name} | Priority: {task.priority} | Category: {task.category} | Created: {task.created_at}")
 
+    def sort_tasks(self) -> None:
+
+        """Sorts tasks by priority first, and then by created date"""
+
+        self.tasks.sort(key=lambda task: (task.priority, task.created_at), reverse=True)
+        print("Tasks sorted by Priority and then by Date.")
+
     def add_task(self, task:object) -> None:
 
-        """This function is adding a single task each time you execute her"""
+        """Adds new task to list.
+        Checks for duplicates and asks user confirmation if exists"""
+
         existing_list = []
         for t in self.tasks:
             existing_list.append(t.task_name)
@@ -46,7 +60,7 @@ class TaskManager:
 
     def edit_task(self, num: int, new_name: str) -> None:
 
-        """This function edits the name of an existing task"""
+        """ Changes task name by task number """
 
         if 1 <= num <= len(self.tasks):
             old_name = self.tasks[num - 1].task_name
@@ -57,7 +71,7 @@ class TaskManager:
 
     def remove_task(self, num:int) -> None:
 
-        """This function remove a single task every time you execute her"""
+        """Removes task from list by task number """
 
         if not self.tasks:
             print("Your Task List is empty")
@@ -71,7 +85,7 @@ class TaskManager:
 
     def mark_done(self, num:int) -> None:
 
-        """This func marking a single task as done with a ✅ """
+        """ Marks task as done by adding checkmark to task name ✅ """
 
         while True:
             if 1 <= num <= len(self.tasks):
@@ -90,7 +104,7 @@ class TaskManager:
 
     def clear_done_tasks(self) -> None:
 
-        """This function clears all of your tasks from the calandar"""
+        """ Removes all marked tasks from the list"""
 
         new_tasks = []
         for task in self.tasks:
@@ -100,75 +114,71 @@ class TaskManager:
 
     def save_to_file(self, file_path):
 
-        """This function is writing your calandar into a '.txt' file """
+        """Saves all tasks to json file.
+        Format:  "task_name": task.task_name,
+                    "priority": task.priority,
+                    "category": task.category,
+                    "created_at": task.created_at """
 
-        st = open(file_path, 'w', encoding='utf-8')
+        tasks_data = []
         for task in self.tasks:
-            line = f"{task.task_name}|{task.priority}|{task.category}|{task.created_at}\n"
-            st.write(line)
+            task_dict = {
+                "task_name": task.task_name,
+                "priority": task.priority,
+                "category": task.category,
+                "created_at": task.created_at
+            }
+            tasks_data.append(task_dict)
+        with open(file_path, 'w', encoding='utf-8') as st:
+            json.dump(tasks_data, st, indent=4, ensure_ascii=False)
         print(f"Data written to {file_path} successfully.")
-        st.close()
 
-    def load_from_file(self,file_path):
+    def load_from_file(self, file_path):
 
-        """This function is loading an existing calandar from a txt file """
+        """Loads tasks from json file into task list.
+                Skips duplicates."""
+
         try:
-            line = []
-            lines = []
-            curr = ""
-            rt = open(file_path, 'r', encoding='utf-8')
-            readed = rt.read()
-            rt.close()
-            for char in readed:
-                if char == "|":
-                    line.append(curr)
-                    curr = ""
-                elif char == "\n":
-                    line.append(curr)
-                    lines.append(line)
-                    line = []
-                    curr = ""
-                else:
-                    curr += char
-            for task in lines:
-                if len(task) == 4:
-                    task_name = task[0]
-                    priority = int(task[1])
-                    category = task[2]
-                    time = task[3]
-                    new_task_obj = dm.TaskAttributes(task_name, priority, category,time)
-                    exists = False
-                    for existing_task in self.tasks:
-                        if existing_task.task_name == task_name:
-                            exists = True
-                            break
-                    if not exists:
-                        self.tasks.append(new_task_obj)
+            with open(file_path, 'r', encoding='utf-8') as rt:
+                tasks_data = json.load(rt)
+            for task in tasks_data:
+                task_name = task["task_name"]
+                priority = task["priority"]
+                category = task["category"]
+                time = task["created_at"]
+                new_task_obj = dm.TaskAttributes(task_name, priority, category, time)
+                exists = False
+                for existing_task in self.tasks:
+                    if existing_task.task_name == task_name:
+                        exists = True
+                        break
+                if not exists:
+                    self.tasks.append(new_task_obj)
         except FileNotFoundError:
             print("Your calendar is empty")
 
-
 TaskManagerBank = TaskManager()
-TaskManagerBank.load_from_file("./TaskManager.txt")
+TaskManagerBank.load_from_file("./TaskManager.json")
 TaskManagerBank.open_message()
-user_input = input("Enter your choice \n")
+user_input = input("Enter your choice \n").strip().lower()
 
 if __name__ == "__main__":
-    while user_input.lower() != "exit":
+    while user_input != "exit":
 
-        if user_input.lower() == "menu":
-            TaskManager.open_message()
+        if user_input == "menu":
+            TaskManagerBank.open_message()
 
-        elif user_input.lower() == "show":
+        elif user_input == "show":
+            TaskManagerBank.sort_tasks()
             TaskManagerBank.show_tasks()
 
-        elif user_input.lower() == "add":
-            new_task = input("Enter your new task name \n")
+        elif user_input == "add":
+            new_task = input("Enter your new task name \n").strip()
             task_obj = dm.build_task(new_task)
             TaskManagerBank.add_task(task_obj)
             print(f"Task: '{task_obj.task_name}' Added! [Priority: {task_obj.priority}, Category: {task_obj.category}]")
 
-        elif user_input.lower() == "edit":
+        elif user_input == "edit":
             print(f"Heres your tasks :\n")
             TaskManagerBank.show_tasks()
             try:
@@ -181,7 +191,7 @@ if __name__ == "__main__":
             except ValueError:
                 print("You must enter a valid number")
 
-        elif user_input.lower() == "mark":
+        elif user_input == "mark":
             print(f"Heres your tasks :\n")
             TaskManagerBank.show_tasks()
             try:
@@ -190,7 +200,7 @@ if __name__ == "__main__":
             except ValueError:
                 print("You must enter a valid number")
 
-        elif user_input.lower() == "remove":
+        elif user_input == "remove":
             print(f"Heres your tasks :\n")
             TaskManagerBank.show_tasks()
             try:
@@ -199,12 +209,13 @@ if __name__ == "__main__":
             except ValueError:
                 print("You must enter a valid number")
 
-        elif user_input.lower() == "clear":
+        elif user_input == "clear":
             TaskManagerBank.clear_done_tasks()
             print("Done tasks have been cleared.")
 
-        elif user_input.lower() == "save":
-            TaskManagerBank.save_to_file('./TaskManager.txt')
+        elif user_input == "save":
+            TaskManagerBank.sort_tasks()
+            TaskManagerBank.save_to_file('./TaskManager.json')
 
-        user_input = input("Enter your choice \n")
+        user_input = input("Enter your choice \n").strip().lower()
     print("GoodBye")
