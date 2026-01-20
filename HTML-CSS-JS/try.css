@@ -1,0 +1,24 @@
+div div{
+    display: inline-block;
+    margin: 10px;
+    width: 100px;
+    height: 100px;
+    border: solid black 3px;
+}
+.blues {
+    background-color: blue;
+}
+
+div div:hover {
+    background-color: black;
+}
+.greens {
+    background-color: green;
+}
+
+.reds {
+    background-color: red;   
+}
+
+
+

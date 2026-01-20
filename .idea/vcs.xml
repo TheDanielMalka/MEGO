@@ -3,6 +3,8 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Almog-class/phonebook_tcp/server-client" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Objects/TaskManager" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Python/Functions" vcs="Git" />
   </component>
 </project>

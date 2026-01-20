@@ -1,0 +1,35 @@
+*{
+    box-sizing: border-box;
+}
+
+.box {
+    display: inline-block;
+    width: 150px;
+    height: 150px;
+    margin: 15px;
+    border: solid black 3px;
+}
+
+div div:nth-child(even) {
+    background-color: #0ba44b;
+}
+
+div div:nth-child(odd) {
+    background-color: aqua;
+}
+
+div div:hover{
+    background-color: purple;
+}
+
+#magic {
+    background-color:transparent;
+    border:red solid 5px;
+    position: relative; 
+    /* static = default | absolute = ביחס לדף ולא ישמר לו המקום | */
+    /* fixed = תקוע באמצע המסך איפה שבחרת  */
+    top: 142px;
+    right:150px;
+    z-index: 1;
+}
+

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Let's try check for addresses!</title>
+    </head>
+    <body>
+        <h1>Make a DNS lookup yourself:</h1>
+        <ol>
+            <li>
+                Hit <img src="dns_img/win-key.jpg" width="20" height="20">+R to open the Run window, type "cmd" and hit OK
+                <br>
+                <img src="dns_img/run.jpg">
+                <br>
+                Alternatively, search for "Command Prompt" and open it.
+                <br>
+                <img src="dns_img/search.jpg">
+            </li>
+            <li>
+                In the command line, type <code>nslookup url-we-want-to-check.com</code>, for example, <code>google.com</code>
+                <br>
+                <img src="dns_img/command.jpg">
+            </li>
+            <li>
+                Click Enter and you'll get the result:
+                <br>
+                <img src="dns_img/result.jpg">
+                <br>
+                You will probably get another result (like the one I hid in the image above)
+                <br>
+                It might have an IP starting with 127.0.0
+                <br>
+                This is a local IP in your local network, passing on your request.
+            </li>
+        </ol>
+        That's it!
+        <a href="home.html">Go Back</a>
+    </body>
+</html>

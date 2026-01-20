@@ -1,0 +1,70 @@
+body {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    margin: 0;
+    height: 100vh;
+    background: white;
+}
+
+#cont {
+    grid-column: 1/4;
+    grid-row: 1/4;
+    filter: blur(1.5px);
+    padding: 20px;
+    overflow: hidden;
+}
+
+#inside {
+    grid-column: 2/3;
+    grid-row: 2/3;
+    filter: blur(0);
+    background: white;
+    border: 25px solid #f1df74;
+    padding: 5px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    height: 250px;
+}
+
+#inside h1 {
+    text-align: center;
+    margin: 0 0 15px 0;
+    font-size: 24px;
+}
+
+#terms-scroll {
+    height: 250px;
+    overflow-y: scroll;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+#checkbox-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+#checkbox-area input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    
+}
+
+#checkbox-area label {
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#agree:not(:checked) ~ button{
+    display: none;
+}

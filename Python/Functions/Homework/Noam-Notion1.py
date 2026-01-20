@@ -198,16 +198,6 @@ import threading
 # print(max_min_values(dictionary))
 
 
-# star = "AsabdArs"
-# dict = {}
-# def create(string):
-#     for item in string:
-#         if item in dict:
-#             dict[item] += 1
-#         else:
-#             dict[item] = 1
-#     return dict
-# print(create(star))
 
 
 
