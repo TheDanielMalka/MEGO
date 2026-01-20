@@ -1,35 +1,3 @@
-<<<<<<< HEAD
-{
-    "learned_categories": {
-        "Work": {
-            "zoom": 3,
-            "jira": 1
-        },
-        "Study": {
-            "homework": 5,
-            "lecture": 2
-        },
-        "Home": {
-            "kitchen": 2,
-            "milk": 3,
-            "16": 1,
-            "new": 1,
-            "monkey": 2,
-            "need": 1,
-            "to": 1
-        },
-        "Health": {
-            "protein": 1,
-            "17:00\\": 1
-        },
-        "Fun": {
-            "concert": 4
-        }
-    },
-    "settings": {
-        "threshold": 5
-    }
-=======
 {
     "learned_categories": {
         "Work": {
@@ -57,5 +25,4 @@
     "settings": {
         "threshold": 5
     }
->>>>>>> 6751963c70495bfde4ade0f6e53db984852cde5a
 }
