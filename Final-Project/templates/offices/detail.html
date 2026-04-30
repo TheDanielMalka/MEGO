@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Office {{ office.room_number }}{% endblock %}
+{% block page_title %}Office – Floor {{ office.floor }}, Room {{ office.room_number }}{% endblock %}
+{% block breadcrumb %}
+  / <a href="{{ url_for('offices.offices_list') }}">Offices</a>
+  / Room {{ office.room_number }}
+{% endblock %}
+
+{% block topbar_actions %}
+  <div class="gap-row">
+    <a href="{{ url_for('offices.office_assign', office_id=office.id) }}" class="btn btn-primary">👥 Assign Employees</a>
+    <a href="{{ url_for('offices.office_edit', office_id=office.id) }}" class="btn btn-outline">✏️ Edit</a>
+    <form method="POST" action="{{ url_for('offices.office_delete', office_id=office.id) }}"
+          onsubmit="return confirm('Delete this office?');">
+      <button type="submit" class="btn btn-danger">🗑 Delete</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+{# Office status alert #}
+{% if office.employee_count > office.capacity %}
+  <div class="alert alert-danger">
+    ⚠️ This office is overcrowded: {{ office.employee_count }} employees but only {{ office.capacity }} seats.
+  </div>
+{% endif %}
+
+<div class="card">
+  <div class="card-title">Office Information</div>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <div class="detail-label">ID</div>
+      <div class="detail-value">#{{ office.id }}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Floor</div>
+      <div class="detail-value">{{ office.floor }}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Room Number</div>
+      <div class="detail-value">{{ office.room_number }}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Capacity</div>
+      <div class="detail-value">{{ office.capacity }} seats</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Employees</div>
+      <div class="detail-value">{{ office.employee_count }}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Status</div>
+      <div class="detail-value">
+        {% if office.employee_count > office.capacity %}
+          <span class="badge badge-red">Overcrowded</span>
+        {% elif office.employee_count == 0 %}
+          <span class="badge badge-gray">Empty</span>
+        {% elif office.employee_count < office.capacity %}
+          <span class="badge badge-green">Available ({{ office.capacity - office.employee_count }} free)</span>
+        {% else %}
+          <span class="badge badge-yellow">Full</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <div class="card-title" style="margin:0">Assigned Employees ({{ employees|length }})</div>
+    <a href="{{ url_for('offices.office_assign', office_id=office.id) }}" class="btn btn-sm btn-outline">
+      Manage Assignments
+    </a>
+  </div>
+
+  {% if employees %}
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Hire Date</th>
+          <th>Seniority</th>
+          <th>Salary</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for emp in employees %}
+        <tr>
+          <td>
+            <a href="{{ url_for('employees.employee_detail', emp_id=emp.id) }}"
+               style="color:var(--primary);font-weight:600">{{ emp.name }}</a>
+          </td>
+          <td><span class="badge badge-blue">{{ emp.department }}</span></td>
+          <td>{{ emp.hire_date }}</td>
+          <td>{{ emp.seniority_years }} yrs</td>
+          <td>₪{{ "{:,.0f}".format(emp.salary) }}</td>
+          <td>
+            <div class="actions">
+              <a href="{{ url_for('employees.employee_detail', emp_id=emp.id) }}" class="btn btn-sm btn-secondary">View</a>
+              <a href="{{ url_for('employees.employee_edit', emp_id=emp.id) }}" class="btn btn-sm btn-outline">Edit</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-muted">No employees assigned to this office.</p>
+  {% endif %}
+</div>
+
+<a href="{{ url_for('offices.offices_list') }}" class="btn btn-secondary">← Back to Offices</a>
+{% endblock %}

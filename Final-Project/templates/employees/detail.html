@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ employee.name }}{% endblock %}
+{% block page_title %}{{ employee.name }}{% endblock %}
+{% block breadcrumb %}
+  / <a href="{{ url_for('employees.employees_list') }}">Employees</a>
+  / {{ employee.name }}
+{% endblock %}
+
+{% block topbar_actions %}
+  <div class="gap-row">
+    <a href="{{ url_for('employees.employee_edit', emp_id=employee.id) }}" class="btn btn-outline">✏️ Edit</a>
+    <form method="POST" action="{{ url_for('employees.employee_delete', emp_id=employee.id) }}"
+          onsubmit="return confirm('Delete this employee?');">
+      <button type="submit" class="btn btn-danger">🗑 Delete</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-title">Employee Information</div>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <div class="detail-label">ID</div>
+      <div class="detail-value">#{{ employee.id }}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Full Name</div>
+      <div class="detail-value">{{ employee.name }}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Department</div>
+      <div class="detail-value"><span class="badge badge-blue">{{ employee.department }}</span></div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Hire Date</div>
+      <div class="detail-value">{{ employee.hire_date }}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Seniority</div>
+      <div class="detail-value">{{ employee.seniority_years }} years ({{ employee.seniority_days }} days)</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Salary</div>
+      <div class="detail-value">₪{{ "{:,.0f}".format(employee.salary) }}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Office</div>
+      <div class="detail-value">
+        {% if employee.office_id %}
+          <a href="{{ url_for('offices.office_detail', office_id=employee.office_id) }}"
+             style="color:var(--primary)">
+            Floor {{ employee.office_floor }}, Room {{ employee.office_room }}
+          </a>
+        {% else %}
+          <span class="badge badge-yellow">Not Assigned</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="gap-row mt-4">
+  <a href="{{ url_for('employees.employees_list') }}" class="btn btn-secondary">← Back to Employees</a>
+  <a href="{{ url_for('employees.employee_edit', emp_id=employee.id) }}" class="btn btn-outline">Edit Employee</a>
+</div>
+{% endblock %}

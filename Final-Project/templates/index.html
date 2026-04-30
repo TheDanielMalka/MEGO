@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total Employees</div>
+    <div class="stat-value">{{ total_employees }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Offices</div>
+    <div class="stat-value">{{ total_offices }}</div>
+  </div>
+  <div class="stat-card warn">
+    <div class="stat-label">Unassigned Employees</div>
+    <div class="stat-value">{{ unassigned }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-label">Offices with Space</div>
+    <div class="stat-value">{{ available }}</div>
+  </div>
+  <div class="stat-card danger">
+    <div class="stat-label">Overcrowded Offices</div>
+    <div class="stat-value">{{ overcrowded }}</div>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+  <div class="card">
+    <div class="card-title">Quick Actions</div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <a href="{{ url_for('employees.employees_list') }}" class="btn btn-primary">
+        👤 View All Employees
+      </a>
+      <a href="{{ url_for('offices.offices_list') }}" class="btn btn-outline">
+        🏢 View All Offices
+      </a>
+      <a href="{{ url_for('employees.employee_add') }}" class="btn btn-secondary">
+        ➕ Add New Employee
+      </a>
+      <a href="{{ url_for('offices.office_add') }}" class="btn btn-secondary">
+        ➕ Add New Office
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">System Status</div>
+    <div class="detail-grid">
+      <div class="detail-item">
+        <div class="detail-label">Total Employees</div>
+        <div class="detail-value">{{ total_employees }}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Total Offices</div>
+        <div class="detail-value">{{ total_offices }}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Overcrowded</div>
+        <div class="detail-value" style="color:var(--danger)">{{ overcrowded }}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Unassigned</div>
+        <div class="detail-value" style="color:var(--warn)">{{ unassigned }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

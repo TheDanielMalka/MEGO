@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Offices{% endblock %}
+{% block page_title %}Offices{% endblock %}
+{% block breadcrumb %} / <a href="{{ url_for('offices.offices_list') }}">Offices</a>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('offices.office_add') }}" class="btn btn-primary">➕ Add Office</a>
+{% endblock %}
+
+{% block content %}
+
+{# ── Filter / Sort bar ── #}
+<form method="GET" action="{{ url_for('offices.offices_list') }}">
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Sort By</label>
+      <select name="sort_by">
+        <option value="">Default</option>
+        <option value="floor"          {% if sort_by=='floor' %}selected{% endif %}>Floor</option>
+        <option value="room_number"    {% if sort_by=='room_number' %}selected{% endif %}>Room Number</option>
+        <option value="capacity"       {% if sort_by=='capacity' %}selected{% endif %}>Capacity</option>
+        <option value="employee_count" {% if sort_by=='employee_count' %}selected{% endif %}>Employee Count</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status Filter</label>
+      <select name="filter_status">
+        <option value="">All Offices</option>
+        <option value="empty"       {% if filter_status=='empty' %}selected{% endif %}>Empty Only</option>
+        <option value="available"   {% if filter_status=='available' %}selected{% endif %}>With Available Seats</option>
+        <option value="overcrowded" {% if filter_status=='overcrowded' %}selected{% endif %}>Overcrowded Only</option>
+      </select>
+    </div>
+    <div class="filter-group" style="justify-content:flex-end">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-primary">Apply</button>
+    </div>
+    <div class="filter-group" style="justify-content:flex-end">
+      <label>&nbsp;</label>
+      <a href="{{ url_for('offices.offices_list') }}" class="btn btn-secondary">Clear</a>
+    </div>
+  </div>
+</form>
+
+{# ── Legend ── #}
+<div class="gap-row" style="margin-bottom:12px; font-size:13px;">
+  <span><span style="display:inline-block;width:12px;height:12px;background:var(--danger-lt);border:1px solid #fca5a5;border-radius:2px"></span> Overcrowded (employees > capacity)</span>
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th><a href="?sort_by=floor{% if filter_status %}&filter_status={{ filter_status }}{% endif %}">Floor ↕</a></th>
+          <th><a href="?sort_by=room_number{% if filter_status %}&filter_status={{ filter_status }}{% endif %}">Room ↕</a></th>
+          <th><a href="?sort_by=capacity{% if filter_status %}&filter_status={{ filter_status }}{% endif %}">Capacity ↕</a></th>
+          <th><a href="?sort_by=employee_count{% if filter_status %}&filter_status={{ filter_status }}{% endif %}">Employees ↕</a></th>
+          <th>Occupancy</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for office in offices %}
+        {% set pct = (office.employee_count / office.capacity * 100) if office.capacity > 0 else 0 %}
+        <tr {% if office.employee_count > office.capacity %}class="overcrowded"{% endif %}>
+          <td>{{ office.floor }}</td>
+          <td>
+            <a href="{{ url_for('offices.office_detail', office_id=office.id) }}"
+               style="color:var(--primary);font-weight:600">{{ office.room_number }}</a>
+          </td>
+          <td>{{ office.capacity }}</td>
+          <td>{{ office.employee_count }}</td>
+          <td>
+            <div class="cap-bar-wrap">
+              <div class="cap-bar">
+                <div class="cap-bar-fill
+                  {% if office.employee_count > office.capacity %}over
+                  {% elif pct >= 100 %}full
+                  {% else %}ok{% endif %}"
+                  style="width: {{ [pct, 100]|min }}%">
+                </div>
+              </div>
+              <span class="cap-bar-label">{{ office.employee_count }}/{{ office.capacity }}</span>
+            </div>
+          </td>
+          <td>
+            {% if office.employee_count > office.capacity %}
+              <span class="badge badge-red">Overcrowded</span>
+            {% elif office.employee_count == 0 %}
+              <span class="badge badge-gray">Empty</span>
+            {% elif office.employee_count < office.capacity %}
+              <span class="badge badge-green">Available</span>
+            {% else %}
+              <span class="badge badge-yellow">Full</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="actions">
+              <a href="{{ url_for('offices.office_detail', office_id=office.id) }}" class="btn btn-sm btn-secondary">View</a>
+              <a href="{{ url_for('offices.office_edit', office_id=office.id) }}" class="btn btn-sm btn-outline">Edit</a>
+              <a href="{{ url_for('offices.office_assign', office_id=office.id) }}" class="btn btn-sm btn-secondary">Assign</a>
+              <form method="POST" action="{{ url_for('offices.office_delete', office_id=office.id) }}"
+                    onsubmit="return confirm('Delete office {{ office.room_number }}?');">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:32px; color:var(--text-muted)">
+            No offices found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<p class="text-muted" style="font-size:13px">{{ offices|length }} office(s) shown</p>
+{% endblock %}

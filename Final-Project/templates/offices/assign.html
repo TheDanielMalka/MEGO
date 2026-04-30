@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Employees – Office {{ office.room_number }}{% endblock %}
+{% block page_title %}Assign Employees to Office{% endblock %}
+{% block breadcrumb %}
+  / <a href="{{ url_for('offices.offices_list') }}">Offices</a>
+  / <a href="{{ url_for('offices.office_detail', office_id=office.id) }}">Room {{ office.room_number }}</a>
+  / Assign
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-title">Office Details</div>
+  <div class="gap-row">
+    <div><strong>Floor:</strong> {{ office.floor }}</div>
+    <div><strong>Room:</strong> {{ office.room_number }}</div>
+    <div><strong>Capacity:</strong> {{ office.capacity }} seats</div>
+    <div><strong>Currently assigned:</strong> {{ office.employee_count }}</div>
+  </div>
+</div>
+
+<div class="alert alert-info">
+  Select the employees you want to assign to this office. Employees currently in this office are pre-selected.
+  All previously assigned employees <strong>not</strong> selected will be unassigned.
+</div>
+
+<form method="POST" action="{{ url_for('offices.office_assign', office_id=office.id) }}">
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div class="card-title" style="margin:0">All Employees ({{ all_employees|length }})</div>
+    </div>
+
+    {% if all_employees %}
+    <div class="checkbox-list">
+      {% for emp in all_employees %}
+      <label class="checkbox-item">
+        <input type="checkbox" name="employee_ids" value="{{ emp.id }}"
+               {% if emp.id in current_employee_ids %}checked{% endif %}>
+        <div>
+          <div class="emp-name">{{ emp.name }}</div>
+          <div class="emp-dept">
+            {{ emp.department }}
+            {% if emp.office_id and emp.office_id != office.id %}
+              &nbsp;·&nbsp;
+              <span style="color:var(--warn)">Currently in another office</span>
+            {% endif %}
+          </div>
+        </div>
+      </label>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="text-muted">No employees in the system yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">💾 Save Assignments</button>
+    <a href="{{ url_for('offices.office_detail', office_id=office.id) }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

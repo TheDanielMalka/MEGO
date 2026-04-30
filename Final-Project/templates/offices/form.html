@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% set form_title = "Add Office" if action == 'add' else "Edit Office – Room " ~ office.room_number %}
+
+{% block title %}{{ form_title }}{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+
+{% block breadcrumb %}
+  / <a href="{{ url_for('offices.offices_list') }}">Offices</a>
+  / {% if action == 'add' %}Add{% else %}Edit{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-title">
+    {% if action == 'add' %}New Office{% else %}Edit Office{% endif %}
+  </div>
+
+  <form method="POST"
+        action="{% if action == 'add' %}{{ url_for('offices.office_add') }}{% else %}{{ url_for('offices.office_edit', office_id=office.id) }}{% endif %}">
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="floor">Floor *</label>
+        <input type="number" id="floor" name="floor" required min="0"
+               value="{{ office.floor if office else '' }}"
+               placeholder="e.g. 3">
+      </div>
+
+      <div class="form-group">
+        <label for="room_number">Room Number *</label>
+        <input type="text" id="room_number" name="room_number" required
+               value="{{ office.room_number if office else '' }}"
+               placeholder="e.g. 301A">
+      </div>
+
+      <div class="form-group">
+        <label for="capacity">Capacity (workstations) *</label>
+        <input type="number" id="capacity" name="capacity" required min="1"
+               value="{{ office.capacity if office else '' }}"
+               placeholder="e.g. 10">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        {% if action == 'add' %}➕ Add Office{% else %}💾 Save Changes{% endif %}
+      </button>
+      <a href="{{ url_for('offices.offices_list') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
