@@ -1,8 +1,3 @@
-version: "3.9"
-
-# Production compose – uses pre-built image from Docker Hub.
-# On EC2: docker compose -f docker-compose.prod.yml up -d
-
 networks:
   mego-net:
     driver: bridge
@@ -31,7 +26,7 @@ services:
       retries: 10
 
   app:
-    image: DOCKER_USERNAME/mego-hr:latest   # CI/CD replaces this tag
+    image: ${APP_IMAGE}
     container_name: mego-app
     restart: always
     environment:
@@ -53,6 +48,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./static:/app/static:ro
     depends_on:
       - app
     networks:
