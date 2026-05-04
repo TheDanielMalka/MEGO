@@ -2,18 +2,21 @@
 
 Flow:  create dept → create office → create employee → read → update → delete
 """
+import uuid
 import pytest
 
 
 @pytest.fixture
 def dept_id(client):
-    resp = client.post('/api/departments', json={'name': 'TestDept', 'budget': 999999})
+    name = f'TestDept-{uuid.uuid4().hex[:8]}'
+    resp = client.post('/api/departments', json={'name': name, 'budget': 999999})
     return resp.get_json()['id']
 
 
 @pytest.fixture
 def office_id(client):
-    resp = client.post('/api/offices', json={'floor': 5, 'room_number': 'TEST-501', 'capacity': 20})
+    room = f'T-{uuid.uuid4().hex[:6]}'
+    resp = client.post('/api/offices', json={'floor': 5, 'room_number': room, 'capacity': 20})
     return resp.get_json()['id']
 
 
