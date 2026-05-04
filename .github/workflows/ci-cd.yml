@@ -1,0 +1,159 @@
+name: CI / CD – MEGO HR
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Final-Project/**"
+      - ".github/workflows/ci-cd.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "Final-Project/**"
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/mego-hr
+  DEPLOY_PATH: /home/ubuntu/MEGO/Final-Project
+
+jobs:
+  # ────────────────────────────────────────────────────────────────
+  # JOB 1 – Run pytest against a real PostgreSQL container
+  # ────────────────────────────────────────────────────────────────
+  test:
+    name: pytest
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB:       mego_test
+          POSTGRES_USER:     mego
+          POSTGRES_PASSWORD: mego
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mego"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: Final-Project
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: Final-Project/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://mego:mego@localhost:5432/mego_test
+          SECRET_KEY:   test-secret-key
+        run: pytest tests/ -v --tb=short
+
+      # ── Email on test failure ──────────────────────────────────
+      - name: Notify on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port:    465
+          secure:         true
+          username:       ${{ secrets.MAIL_USERNAME }}
+          password:       ${{ secrets.MAIL_PASSWORD }}
+          to:             ${{ secrets.MAIL_TO }}
+          from:           "MEGO CI <${{ secrets.MAIL_USERNAME }}>"
+          subject:        "❌ Tests FAILED – ${{ github.repository }} @ ${{ github.ref_name }}"
+          body: |
+            Tests failed on branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Triggered by: ${{ github.actor }}
+
+            View the run:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  # ────────────────────────────────────────────────────────────────
+  # JOB 2 – Build & push Docker image to Docker Hub
+  # ────────────────────────────────────────────────────────────────
+  build-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: Final-Project
+          file:    Final-Project/Dockerfile
+          push:    true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+  # ────────────────────────────────────────────────────────────────
+  # JOB 3 – SSH into EC2 and deploy
+  # ────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key:      ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd /home/ubuntu/MEGO/Final-Project
+
+            # Pull latest code (nginx.conf, static, compose files)
+            git pull origin main
+
+            # Login to Docker Hub and pull new image
+            echo "${{ secrets.DOCKER_PASSWORD }}" | \
+              docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+            docker pull ${{ secrets.DOCKER_USERNAME }}/mego-hr:${{ github.sha }}
+
+            # Update APP_IMAGE in .env (preserves POSTGRES_PASSWORD etc.)
+            if grep -q "^APP_IMAGE=" .env 2>/dev/null; then
+              sed -i "s|^APP_IMAGE=.*|APP_IMAGE=${{ secrets.DOCKER_USERNAME }}/mego-hr:${{ github.sha }}|" .env
+            else
+              echo "APP_IMAGE=${{ secrets.DOCKER_USERNAME }}/mego-hr:${{ github.sha }}" >> .env
+            fi
+
+            # Rolling restart
+            docker compose -f docker-compose.prod.yml up -d --no-build
+
+            # Cleanup old images
+            docker image prune -f
+
+            echo "Deployed ${{ github.sha }} successfully"
