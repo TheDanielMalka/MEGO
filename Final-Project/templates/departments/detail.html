@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{{ department.name }}{% endblock %}
+{% block page_title %}{{ department.name }}{% endblock %}
+{% block breadcrumb %}
+  / <a href="{{ url_for('departments.departments_list') }}">Departments</a>
+  / {{ department.name }}
+{% endblock %}
+
+{% block topbar_actions %}
+  <div style="display:flex;gap:8px">
+    <a href="{{ url_for('departments.department_edit', dept_id=department.id) }}" class="btn btn-outline btn-sm">Edit</a>
+    <form method="POST" action="{{ url_for('departments.department_delete', dept_id=department.id) }}"
+          onsubmit="return confirm('Delete {{ department.name }}?')">
+      <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+  <div>
+    <div class="card">
+      <div class="card-title">Department Info</div>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Name</div>
+          <div class="detail-value" style="font-size:18px;font-weight:700">{{ department.name }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Manager</div>
+          <div class="detail-value">{{ department.manager_name or '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Headcount</div>
+          <div class="detail-value" style="font-size:24px;font-weight:700;color:var(--primary)">{{ department.headcount }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Avg Salary</div>
+          <div class="detail-value">₪{{ "{:,.0f}".format(department.avg_salary) }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Total Payroll</div>
+          <div class="detail-value">₪{{ "{:,.0f}".format(department.total_salary) }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Annual Budget</div>
+          <div class="detail-value">₪{{ "{:,.0f}".format(department.budget) }}</div>
+        </div>
+      </div>
+      {% if department.description %}
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <div class="detail-label">Description</div>
+        <p style="margin-top:6px;color:var(--text)">{{ department.description }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-title">Budget Usage</div>
+      {% if department.budget > 0 %}
+        {% set pct = [department.total_salary / department.budget * 100, 120]|min %}
+        {% set real_pct = department.total_salary / department.budget * 100 %}
+        <div class="seniority-bar-wrap">
+          <div class="seniority-bar" style="height:16px">
+            <div class="seniority-fill {% if real_pct > 100 %}over{% elif real_pct > 80 %}warn{% endif %}"
+                 style="width:{{ [pct, 100]|min }}%;{% if real_pct > 100 %}background:var(--danger){% endif %}">
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px">
+          <span>Payroll: <strong>₪{{ "{:,.0f}".format(department.total_salary) }}</strong></span>
+          <span>Budget: <strong>₪{{ "{:,.0f}".format(department.budget) }}</strong></span>
+          <span style="{% if real_pct > 100 %}color:var(--danger){% endif %}">
+            <strong>{{ "{:.1f}".format(real_pct) }}%</strong> used
+          </span>
+        </div>
+        {% if real_pct > 100 %}
+          <div class="alert alert-danger" style="margin-top:12px">
+            ⚠️ Payroll exceeds the annual budget by ₪{{ "{:,.0f}".format(department.total_salary - department.budget) }}!
+          </div>
+        {% endif %}
+      {% else %}
+        <p class="text-muted">No budget set for this department.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Quick Actions</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <a href="{{ url_for('departments.department_edit', dept_id=department.id) }}" class="btn btn-outline">Edit Department</a>
+        <a href="{{ url_for('employees.employees_list') }}?filter_dept={{ department.name }}" class="btn btn-secondary">View Employees</a>
+        <a href="{{ url_for('departments.departments_list') }}" class="btn btn-secondary">← All Departments</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Employees in {{ department.name }} ({{ employees|length }})</div>
+  {% if employees %}
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Status</th><th>Hire Date</th><th>Seniority</th><th>Salary</th><th>Office</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for emp in employees %}
+        <tr>
+          <td>
+            <div class="emp-name-cell">
+              <div class="avatar">{{ emp.name[0].upper() }}</div>
+              <a href="{{ url_for('employees.employee_detail', emp_id=emp.id) }}" class="link-primary">{{ emp.name }}</a>
+            </div>
+          </td>
+          <td>
+            {% if emp.status == 'active' %}<span class="badge badge-green">Active</span>
+            {% elif emp.status == 'inactive' %}<span class="badge badge-red">Inactive</span>
+            {% else %}<span class="badge badge-yellow">On Leave</span>{% endif %}
+          </td>
+          <td>{{ emp.hire_date }}</td>
+          <td>{{ emp.seniority_years }} yrs</td>
+          <td>₪{{ "{:,.0f}".format(emp.salary) }}</td>
+          <td>
+            {% if emp.office_room %}F{{ emp.office_floor }}-{{ emp.office_room }}
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td><a href="{{ url_for('employees.employee_edit', emp_id=emp.id) }}" class="btn btn-sm btn-outline">Edit</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-muted">No employees in this department.</p>
+  {% endif %}
+</div>
+{% endblock %}

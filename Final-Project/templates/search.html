@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block page_title %}Search{% endblock %}
+{% block breadcrumb %} / Search{% endblock %}
+
+{% block content %}
+<div class="card">
+  <form action="{{ url_for('analytics.global_search') }}" method="GET" style="display:flex;gap:12px">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search employees, departments, offices..."
+           style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:6px;font-size:15px">
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if q %}<a href="{{ url_for('analytics.global_search') }}" class="btn btn-secondary">Clear</a>{% endif %}
+  </form>
+</div>
+
+{% if q %}
+  <div class="two-col-grid">
+    {# Employees Results #}
+    <div class="card">
+      <div class="card-title">👤 Employees ({{ employees|length }})</div>
+      {% if employees %}
+        {% for emp in employees %}
+        <div class="search-result-item">
+          <div class="emp-name-cell" style="margin-bottom:4px">
+            <div class="avatar">{{ emp.name[0].upper() }}</div>
+            <div>
+              <a href="{{ url_for('employees.employee_detail', emp_id=emp.id) }}" class="link-primary" style="font-weight:600">{{ emp.name }}</a>
+              {% if emp.status == 'active' %}<span class="badge badge-green" style="margin-left:6px">Active</span>
+              {% elif emp.status == 'inactive' %}<span class="badge badge-red" style="margin-left:6px">Inactive</span>
+              {% else %}<span class="badge badge-yellow" style="margin-left:6px">On Leave</span>{% endif %}
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);padding-left:36px">
+            {{ emp.department or 'No department' }} · ₪{{ "{:,.0f}".format(emp.salary) }} · {{ emp.seniority_years }} yrs
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="empty-state">No employees match "{{ q }}"</p>
+      {% endif %}
+    </div>
+
+    {# Offices Results #}
+    <div class="card">
+      <div class="card-title">🏢 Offices ({{ offices|length }})</div>
+      {% if offices %}
+        {% for office in offices %}
+        <div class="search-result-item">
+          <a href="{{ url_for('offices.office_detail', office_id=office.id) }}" class="link-primary" style="font-weight:600">
+            Floor {{ office.floor }} – Room {{ office.room_number }}
+          </a>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">
+            {{ office.employee_count }}/{{ office.capacity }} seats used
+            {% if office.employee_count > office.capacity %}
+              · <span style="color:var(--danger)">Overcrowded</span>
+            {% elif office.employee_count == 0 %}
+              · <span style="color:var(--text-muted)">Empty</span>
+            {% else %}
+              · <span style="color:var(--success)">Available</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="empty-state">No offices match "{{ q }}"</p>
+      {% endif %}
+    </div>
+  </div>
+{% else %}
+  <div class="card" style="text-align:center;padding:48px">
+    <div style="font-size:48px;margin-bottom:16px">🔍</div>
+    <p style="color:var(--text-muted)">Type a name, department, or room number to search.</p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,16 +1,17 @@
 {% extends "base.html" %}
-
 {% block title %}Employees{% endblock %}
 {% block page_title %}Employees{% endblock %}
 {% block breadcrumb %} / <a href="{{ url_for('employees.employees_list') }}">Employees</a>{% endblock %}
 
 {% block topbar_actions %}
-  <a href="{{ url_for('employees.employee_add') }}" class="btn btn-primary">➕ Add Employee</a>
+  <div style="display:flex;gap:8px">
+    <a href="{{ url_for('employees.employees_export') }}{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="btn btn-secondary btn-sm">⬇ Export CSV</a>
+    <a href="{{ url_for('employees.employee_add') }}" class="btn btn-primary btn-sm">+ Add Employee</a>
+  </div>
 {% endblock %}
 
 {% block content %}
-
-{# ── Filter / Sort bar ── #}
 <form method="GET" action="{{ url_for('employees.employees_list') }}">
   <div class="filter-bar">
     <div class="filter-group">
@@ -21,7 +22,7 @@
         <option value="department" {% if sort_by=='department' %}selected{% endif %}>Department</option>
         <option value="seniority"  {% if sort_by=='seniority' %}selected{% endif %}>Seniority</option>
         <option value="hire_date"  {% if sort_by=='hire_date' %}selected{% endif %}>Hire Date</option>
-        <option value="salary"     {% if sort_by=='salary' %}selected{% endif %}>Salary</option>
+        <option value="salary"     {% if sort_by=='salary' %}selected{% endif %}>Salary ↓</option>
       </select>
     </div>
     <div class="filter-group">
@@ -29,7 +30,7 @@
       <select name="filter_dept">
         <option value="">All Departments</option>
         {% for dept in departments %}
-          <option value="{{ dept }}" {% if filter_dept==dept %}selected{% endif %}>{{ dept }}</option>
+          <option value="{{ dept.name }}" {% if filter_dept==dept.name %}selected{% endif %}>{{ dept.name }}</option>
         {% endfor %}
       </select>
     </div>
@@ -45,7 +46,16 @@
       </select>
     </div>
     <div class="filter-group">
-      <label>Min Seniority (years)</label>
+      <label>Status</label>
+      <select name="status">
+        <option value="">All</option>
+        <option value="active"   {% if status_filter=='active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if status_filter=='inactive' %}selected{% endif %}>Inactive</option>
+        <option value="on_leave" {% if status_filter=='on_leave' %}selected{% endif %}>On Leave</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Min Seniority (yrs)</label>
       <input type="number" name="min_seniority" min="0" step="0.5"
              value="{{ min_seniority or '' }}" placeholder="e.g. 2">
     </div>
@@ -60,42 +70,60 @@
   </div>
 </form>
 
-<div class="card" style="padding:0; overflow:hidden;">
+<div class="card" style="padding:0;overflow:hidden">
   <div class="table-wrapper">
     <table>
       <thead>
         <tr>
-          <th><a href="?sort_by=name{% if filter_dept %}&filter_dept={{ filter_dept }}{% endif %}">Name ↕</a></th>
-          <th><a href="?sort_by=department{% if filter_dept %}&filter_dept={{ filter_dept }}{% endif %}">Department ↕</a></th>
-          <th><a href="?sort_by=hire_date{% if filter_dept %}&filter_dept={{ filter_dept }}{% endif %}">Hire Date ↕</a></th>
-          <th><a href="?sort_by=seniority{% if filter_dept %}&filter_dept={{ filter_dept }}{% endif %}">Seniority ↕</a></th>
-          <th><a href="?sort_by=salary{% if filter_dept %}&filter_dept={{ filter_dept }}{% endif %}">Salary ↕</a></th>
-          <th>Office Floor</th>
-          <th>Room</th>
+          <th><a href="?sort_by=name&filter_dept={{ filter_dept or '' }}">Name ↕</a></th>
+          <th><a href="?sort_by=department&filter_dept={{ filter_dept or '' }}">Department ↕</a></th>
+          <th>Status</th>
+          <th><a href="?sort_by=hire_date&filter_dept={{ filter_dept or '' }}">Hire Date ↕</a></th>
+          <th><a href="?sort_by=seniority&filter_dept={{ filter_dept or '' }}">Seniority ↕</a></th>
+          <th><a href="?sort_by=salary&filter_dept={{ filter_dept or '' }}">Salary ↕</a></th>
+          <th>Office</th>
+          <th>Skills</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for emp in employees %}
         <tr>
-          <td><a href="{{ url_for('employees.employee_detail', emp_id=emp.id) }}" style="color:var(--primary);font-weight:600">{{ emp.name }}</a></td>
-          <td><span class="badge badge-blue">{{ emp.department }}</span></td>
-          <td>{{ emp.hire_date }}</td>
-          <td>{{ emp.seniority_years }} yrs</td>
-          <td>₪{{ "{:,.0f}".format(emp.salary) }}</td>
           <td>
-            {% if emp.office_floor is not none %}
-              {{ emp.office_floor }}
+            <div class="emp-name-cell">
+              <div class="avatar">{{ emp.name[0].upper() }}</div>
+              <a href="{{ url_for('employees.employee_detail', emp_id=emp.id) }}" class="link-primary">{{ emp.name }}</a>
+            </div>
+          </td>
+          <td>
+            {% if emp.department %}
+              <span class="badge badge-blue">{{ emp.department }}</span>
             {% else %}
               <span class="text-muted">—</span>
             {% endif %}
           </td>
           <td>
+            {% if emp.status == 'active' %}<span class="badge badge-green">Active</span>
+            {% elif emp.status == 'inactive' %}<span class="badge badge-red">Inactive</span>
+            {% else %}<span class="badge badge-yellow">On Leave</span>{% endif %}
+          </td>
+          <td>{{ emp.hire_date }}</td>
+          <td>{{ emp.seniority_years }} yrs</td>
+          <td>₪{{ "{:,.0f}".format(emp.salary) }}</td>
+          <td>
             {% if emp.office_room %}
               <a href="{{ url_for('offices.office_detail', office_id=emp.office_id) }}"
-                 style="color:var(--primary)">{{ emp.office_room }}</a>
+                 class="link-primary">F{{ emp.office_floor }}-{{ emp.office_room }}</a>
             {% else %}
               <span class="badge badge-yellow">Unassigned</span>
+            {% endif %}
+          </td>
+          <td>
+            {% for skill in (emp.skills or [])[:3] %}
+              <span class="tag">{{ skill }}</span>
+            {% endfor %}
+            {% if emp.skills and emp.skills|length > 3 %}
+              <span class="tag tag-more">+{{ emp.skills|length - 3 }}</span>
             {% endif %}
           </td>
           <td>
@@ -103,23 +131,18 @@
               <a href="{{ url_for('employees.employee_detail', emp_id=emp.id) }}" class="btn btn-sm btn-secondary">View</a>
               <a href="{{ url_for('employees.employee_edit', emp_id=emp.id) }}" class="btn btn-sm btn-outline">Edit</a>
               <form method="POST" action="{{ url_for('employees.employee_delete', emp_id=emp.id) }}"
-                    onsubmit="return confirm('Delete {{ emp.name }}?');">
+                    onsubmit="return confirm('Delete {{ emp.name }}?')">
                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
               </form>
             </div>
           </td>
         </tr>
         {% else %}
-        <tr>
-          <td colspan="8" style="text-align:center; padding:32px; color:var(--text-muted)">
-            No employees found.
-          </td>
-        </tr>
+        <tr><td colspan="9" class="empty-state">No employees found.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
-
 <p class="text-muted" style="font-size:13px">{{ employees|length }} employee(s) shown</p>
 {% endblock %}

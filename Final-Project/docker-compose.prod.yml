@@ -1,5 +1,8 @@
 version: "3.9"
 
+# Production compose – uses pre-built image from Docker Hub.
+# On EC2: docker compose -f docker-compose.prod.yml up -d
+
 networks:
   mego-net:
     driver: bridge
@@ -8,6 +11,7 @@ volumes:
   postgres-data:
 
 services:
+
   db:
     image: postgres:16-alpine
     container_name: mego-db
@@ -27,7 +31,7 @@ services:
       retries: 10
 
   app:
-    image: YOUR_DOCKERHUB_USERNAME/mego-hr:latest
+    image: DOCKER_USERNAME/mego-hr:latest   # CI/CD replaces this tag
     container_name: mego-app
     restart: always
     environment:

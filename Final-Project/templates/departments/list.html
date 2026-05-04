@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Departments{% endblock %}
+{% block page_title %}Departments{% endblock %}
+{% block breadcrumb %} / <a href="{{ url_for('departments.departments_list') }}">Departments</a>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('departments.department_add') }}" class="btn btn-primary btn-sm">+ Add Department</a>
+{% endblock %}
+
+{% block content %}
+<form method="GET" action="{{ url_for('departments.departments_list') }}">
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Sort By</label>
+      <select name="sort_by">
+        <option value="">Default</option>
+        <option value="name"       {% if sort_by=='name' %}selected{% endif %}>Name</option>
+        <option value="headcount"  {% if sort_by=='headcount' %}selected{% endif %}>Headcount</option>
+        <option value="avg_salary" {% if sort_by=='avg_salary' %}selected{% endif %}>Avg Salary</option>
+        <option value="budget"     {% if sort_by=='budget' %}selected{% endif %}>Budget</option>
+      </select>
+    </div>
+    <div class="filter-group" style="justify-content:flex-end">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-primary">Apply</button>
+    </div>
+    <div class="filter-group" style="justify-content:flex-end">
+      <label>&nbsp;</label>
+      <a href="{{ url_for('departments.departments_list') }}" class="btn btn-secondary">Clear</a>
+    </div>
+  </div>
+</form>
+
+<div class="card" style="padding:0;overflow:hidden">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Manager</th>
+          <th><a href="?sort_by=headcount">Headcount ↕</a></th>
+          <th><a href="?sort_by=avg_salary">Avg Salary ↕</a></th>
+          <th><a href="?sort_by=budget">Budget ↕</a></th>
+          <th>Budget Usage</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dept in departments %}
+        {% set usage_pct = (dept.total_salary / dept.budget * 100) if dept.budget > 0 else 0 %}
+        <tr>
+          <td>
+            <a href="{{ url_for('departments.department_detail', dept_id=dept.id) }}" class="link-primary" style="font-weight:600">
+              {{ dept.name }}
+            </a>
+            {% if dept.description %}
+              <div style="font-size:12px;color:var(--text-muted)">{{ dept.description[:50] }}{% if dept.description|length > 50 %}…{% endif %}</div>
+            {% endif %}
+          </td>
+          <td>{{ dept.manager_name or '—' }}</td>
+          <td><span class="badge badge-blue">{{ dept.headcount }}</span></td>
+          <td>₪{{ "{:,.0f}".format(dept.avg_salary) }}</td>
+          <td>₪{{ "{:,.0f}".format(dept.budget) }}</td>
+          <td>
+            {% if dept.budget > 0 %}
+            <div class="cap-bar-wrap">
+              <div class="cap-bar">
+                <div class="cap-bar-fill {% if usage_pct > 100 %}over{% elif usage_pct > 80 %}full{% else %}ok{% endif %}"
+                     style="width:{{ [usage_pct, 100]|min }}%"></div>
+              </div>
+              <span class="cap-bar-label">{{ usage_pct|int }}%</span>
+            </div>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="actions">
+              <a href="{{ url_for('departments.department_detail', dept_id=dept.id) }}" class="btn btn-sm btn-secondary">View</a>
+              <a href="{{ url_for('departments.department_edit', dept_id=dept.id) }}" class="btn btn-sm btn-outline">Edit</a>
+              <form method="POST" action="{{ url_for('departments.department_delete', dept_id=dept.id) }}"
+                    onsubmit="return confirm('Delete {{ dept.name }}? Employees will lose their department.')">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="empty-state">No departments yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="text-muted" style="font-size:13px">{{ departments|length }} department(s)</p>
+{% endblock %}

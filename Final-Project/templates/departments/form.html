@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set form_title = "Add Department" if action == 'add' else "Edit: " ~ department.name %}
+{% block title %}{{ form_title }}{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+{% block breadcrumb %}
+  / <a href="{{ url_for('departments.departments_list') }}">Departments</a>
+  / {% if action == 'add' %}Add{% else %}Edit{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-title">{% if action == 'add' %}New Department{% else %}Edit Department{% endif %}</div>
+  <form method="POST"
+        action="{% if action=='add' %}{{ url_for('departments.department_add') }}{% else %}{{ url_for('departments.department_edit', dept_id=department.id) }}{% endif %}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="name">Department Name *</label>
+        <input type="text" id="name" name="name" required
+               value="{{ department.name if department else '' }}"
+               placeholder="e.g. Engineering">
+      </div>
+      <div class="form-group">
+        <label for="manager_name">Manager Name</label>
+        <input type="text" id="manager_name" name="manager_name"
+               value="{{ department.manager_name if department and department.manager_name else '' }}"
+               placeholder="e.g. Sarah Levy">
+      </div>
+      <div class="form-group">
+        <label for="budget">Annual Budget (₪)</label>
+        <input type="number" id="budget" name="budget" min="0" step="1000"
+               value="{{ department.budget if department else '' }}"
+               placeholder="e.g. 1000000">
+      </div>
+      <div class="form-group" style="grid-column: 1 / -1">
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description"
+               value="{{ department.description if department and department.description else '' }}"
+               placeholder="Short description of the department's role...">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        {% if action == 'add' %}+ Add Department{% else %}💾 Save Changes{% endif %}
+      </button>
+      <a href="{{ url_for('departments.departments_list') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

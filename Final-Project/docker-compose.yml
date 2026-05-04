@@ -8,6 +8,8 @@ volumes:
   postgres-data:
 
 services:
+
+  # ── PostgreSQL Database ────────────────────────────────────────
   db:
     image: postgres:16-alpine
     container_name: mego-db
@@ -26,6 +28,7 @@ services:
       timeout: 5s
       retries: 10
 
+  # ── Flask Application ──────────────────────────────────────────
   app:
     build:
       context: .
@@ -43,6 +46,7 @@ services:
     expose:
       - "5000"
 
+  # ── Nginx Reverse Proxy ────────────────────────────────────────
   nginx:
     image: nginx:1.25-alpine
     container_name: mego-nginx
@@ -56,3 +60,8 @@ services:
       - app
     networks:
       - mego-net
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

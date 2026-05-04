@@ -19,8 +19,8 @@ app.register_blueprint(analytics_bp)
 
 @app.route('/')
 def index():
-    stats = get_dashboard_stats()
-    top   = get_top_earners(5)
+    stats     = get_dashboard_stats()
+    top       = get_top_earners(5)
     recent_activity = get_recent(8)
     return render_template('index.html', stats=stats,
                            top_earners=top, recent_activity=recent_activity)

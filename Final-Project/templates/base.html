@@ -1,61 +1,144 @@
 <!DOCTYPE html>
-<html lang="he" dir="ltr">
+<html lang="en" dir="ltr" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Dashboard{% endblock %} | MEGO HR</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <h1>MEGO HR</h1>
-    <span>Employee Dashboard</span>
+    <div class="logo-mark">M</div>
+    <div>
+      <h1>MEGO HR</h1>
+      <span>Employee Management</span>
+    </div>
   </div>
+
+  <div class="sidebar-search">
+    <form action="{{ url_for('analytics.global_search') }}" method="GET">
+      <input type="text" name="q" placeholder="Search..." autocomplete="off"
+             value="{{ request.args.get('q', '') }}">
+    </form>
+  </div>
+
   <nav class="sidebar-nav">
     <div class="nav-section">Main</div>
     <a href="{{ url_for('index') }}"
        class="{% if request.endpoint == 'index' %}active{% endif %}">
-      <span class="icon">🏠</span> Dashboard
+      <span class="nav-icon">⬛</span> Dashboard
+    </a>
+    <a href="{{ url_for('analytics.audit_log') }}"
+       class="{% if request.endpoint == 'analytics.audit_log' %}active{% endif %}">
+      <span class="nav-icon">📋</span> Audit Log
+    </a>
+    <a href="{{ url_for('analytics.global_search') }}"
+       class="{% if request.endpoint == 'analytics.global_search' %}active{% endif %}">
+      <span class="nav-icon">🔍</span> Search
     </a>
 
-    <div class="nav-section" style="margin-top:12px">Employees</div>
+    <div class="nav-section">People</div>
     <a href="{{ url_for('employees.employees_list') }}"
        class="{% if request.endpoint and 'employee' in request.endpoint %}active{% endif %}">
-      <span class="icon">👤</span> All Employees
+      <span class="nav-icon">👤</span> Employees
     </a>
     <a href="{{ url_for('employees.employee_add') }}">
-      <span class="icon">➕</span> Add Employee
+      <span class="nav-icon">➕</span> Add Employee
+    </a>
+    <a href="{{ url_for('departments.departments_list') }}"
+       class="{% if request.endpoint and 'department' in request.endpoint %}active{% endif %}">
+      <span class="nav-icon">🏗️</span> Departments
+    </a>
+    <a href="{{ url_for('departments.department_add') }}">
+      <span class="nav-icon">➕</span> Add Department
     </a>
 
-    <div class="nav-section" style="margin-top:12px">Offices</div>
+    <div class="nav-section">Offices</div>
     <a href="{{ url_for('offices.offices_list') }}"
        class="{% if request.endpoint and 'office' in request.endpoint %}active{% endif %}">
-      <span class="icon">🏢</span> All Offices
+      <span class="nav-icon">🏢</span> All Offices
     </a>
     <a href="{{ url_for('offices.office_add') }}">
-      <span class="icon">➕</span> Add Office
+      <span class="nav-icon">➕</span> Add Office
+    </a>
+
+    <div class="nav-section">API</div>
+    <a href="/health" target="_blank">
+      <span class="nav-icon">💚</span> Health Check
+    </a>
+    <a href="/api/employees" target="_blank">
+      <span class="nav-icon">📡</span> API: Employees
+    </a>
+    <a href="/api/offices" target="_blank">
+      <span class="nav-icon">📡</span> API: Offices
     </a>
   </nav>
+
+  <div class="sidebar-footer">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+      <span id="theme-icon">🌙</span>
+    </button>
+    <span>MEGO HR v2.0</span>
+  </div>
 </aside>
 
 <div class="main">
   <header class="topbar">
-    <div>
-      <div class="breadcrumb">
-        <a href="{{ url_for('index') }}">Home</a>
-        {% block breadcrumb %}{% endblock %}
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="breadcrumb">
+          <a href="{{ url_for('index') }}">Home</a>
+          {% block breadcrumb %}{% endblock %}
+        </div>
+        <h2>{% block page_title %}Dashboard{% endblock %}</h2>
       </div>
-      <h2>{% block page_title %}Dashboard{% endblock %}</h2>
     </div>
-    {% block topbar_actions %}{% endblock %}
+    <div class="topbar-right">
+      {% block topbar_actions %}{% endblock %}
+    </div>
   </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="toast toast-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
   <main class="content">
     {% block content %}{% endblock %}
   </main>
 </div>
 
+<script>
+  function toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', next);
+    document.getElementById('theme-icon').textContent = next === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('theme', next);
+  }
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+    document.querySelector('.main').classList.toggle('sidebar-collapsed');
+  }
+  (function() {
+    const saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    const icon = document.getElementById('theme-icon');
+    if (icon) icon.textContent = saved === 'dark' ? '☀️' : '🌙';
+  })();
+
+  // Auto-dismiss toasts
+  document.querySelectorAll('.toast').forEach(t => {
+    setTimeout(() => t.classList.add('hide'), 4000);
+  });
+</script>
 </body>
 </html>

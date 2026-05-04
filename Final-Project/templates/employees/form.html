@@ -1,10 +1,7 @@
 {% extends "base.html" %}
-
 {% set form_title = "Add Employee" if action == 'add' else "Edit: " ~ employee.name %}
-
 {% block title %}{{ form_title }}{% endblock %}
 {% block page_title %}{{ form_title }}{% endblock %}
-
 {% block breadcrumb %}
   / <a href="{{ url_for('employees.employees_list') }}">Employees</a>
   / {% if action == 'add' %}Add{% else %}Edit{% endif %}
@@ -15,23 +12,27 @@
   <div class="card-title">
     {% if action == 'add' %}New Employee{% else %}Edit Employee{% endif %}
   </div>
-
   <form method="POST"
-        action="{% if action == 'add' %}{{ url_for('employees.employee_add') }}{% else %}{{ url_for('employees.employee_edit', emp_id=employee.id) }}{% endif %}">
-
+        action="{% if action=='add' %}{{ url_for('employees.employee_add') }}{% else %}{{ url_for('employees.employee_edit', emp_id=employee.id) }}{% endif %}">
     <div class="form-grid">
+
       <div class="form-group">
         <label for="name">Full Name *</label>
         <input type="text" id="name" name="name" required
-               value="{{ employee.name if employee else '' }}"
-               placeholder="e.g. Daniel Cohen">
+               value="{{ employee.name if employee else '' }}" placeholder="e.g. Daniel Cohen">
       </div>
 
       <div class="form-group">
-        <label for="department">Department *</label>
-        <input type="text" id="department" name="department" required
-               value="{{ employee.department if employee else '' }}"
-               placeholder="e.g. Engineering">
+        <label for="department_id">Department</label>
+        <select id="department_id" name="department_id">
+          <option value="">— No Department —</option>
+          {% for dept in departments %}
+            <option value="{{ dept.id }}"
+              {% if employee and employee.department_id == dept.id %}selected{% endif %}>
+              {{ dept.name }}
+            </option>
+          {% endfor %}
+        </select>
       </div>
 
       <div class="form-group">
@@ -43,8 +44,16 @@
       <div class="form-group">
         <label for="salary">Salary (₪) *</label>
         <input type="number" id="salary" name="salary" required min="0" step="100"
-               value="{{ employee.salary if employee else '' }}"
-               placeholder="e.g. 12000">
+               value="{{ employee.salary if employee else '' }}" placeholder="e.g. 15000">
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="active"   {% if not employee or employee.status == 'active' %}selected{% endif %}>Active</option>
+          <option value="inactive" {% if employee and employee.status == 'inactive' %}selected{% endif %}>Inactive</option>
+          <option value="on_leave" {% if employee and employee.status == 'on_leave' %}selected{% endif %}>On Leave</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -55,19 +64,54 @@
             <option value="{{ office.id }}"
               {% if employee and employee.office_id == office.id %}selected{% endif %}>
               Floor {{ office.floor }} – Room {{ office.room_number }}
-              ({{ office.employee_count }}/{{ office.capacity }} seats)
+              ({{ office.employee_count }}/{{ office.capacity }})
             </option>
           {% endfor %}
         </select>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="{{ employee.email if employee and employee.email else '' }}"
+               placeholder="name@company.com">
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" name="phone"
+               value="{{ employee.phone if employee and employee.phone else '' }}"
+               placeholder="+972-50-0000000">
+      </div>
+
+      <div class="form-group" style="grid-column: 1 / -1">
+        <label for="skills">Skills / Tags
+          <small class="text-muted">(comma-separated, e.g. Python, React, SQL)</small>
+        </label>
+        <input type="text" id="skills" name="skills"
+               value="{{ (employee.skills or [])|join(', ') if employee else '' }}"
+               placeholder="Python, Leadership, Excel...">
+        <div id="skills-preview" class="skills-preview"></div>
       </div>
     </div>
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">
-        {% if action == 'add' %}➕ Add Employee{% else %}💾 Save Changes{% endif %}
+        {% if action == 'add' %}+ Add Employee{% else %}💾 Save Changes{% endif %}
       </button>
       <a href="{{ url_for('employees.employees_list') }}" class="btn btn-secondary">Cancel</a>
     </div>
   </form>
 </div>
+
+<script>
+const input = document.getElementById('skills');
+const preview = document.getElementById('skills-preview');
+function renderTags() {
+  const tags = input.value.split(',').map(s => s.trim()).filter(Boolean);
+  preview.innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
+}
+input.addEventListener('input', renderTags);
+renderTags();
+</script>
 {% endblock %}

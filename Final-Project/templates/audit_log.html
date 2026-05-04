@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Audit Log{% endblock %}
+{% block page_title %}Audit Log{% endblock %}
+{% block breadcrumb %} / Audit Log{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:0;overflow:hidden">
+  <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+    <span style="font-weight:600">Last {{ events|length }} events</span>
+    <span class="text-muted" style="font-size:13px">All create / update / delete actions are logged here automatically.</span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Time</th>
+          <th>Action</th>
+          <th>Entity</th>
+          <th>ID</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr>
+          <td style="color:var(--text-muted);font-size:12px">{{ event.id }}</td>
+          <td style="font-size:12px;white-space:nowrap">{{ event.created_at[:19] if event.created_at else '—' }}</td>
+          <td>
+            <span class="badge action-badge action-{{ event.action.lower() }}">{{ event.action }}</span>
+          </td>
+          <td>
+            <span class="badge badge-blue">{{ event.entity_type }}</span>
+          </td>
+          <td>
+            {% if event.entity_type == 'employee' and event.entity_id %}
+              <a href="{{ url_for('employees.employee_detail', emp_id=event.entity_id) }}" class="link-primary">#{{ event.entity_id }}</a>
+            {% elif event.entity_type == 'office' and event.entity_id %}
+              <a href="{{ url_for('offices.office_detail', office_id=event.entity_id) }}" class="link-primary">#{{ event.entity_id }}</a>
+            {% elif event.entity_type == 'department' and event.entity_id %}
+              <a href="{{ url_for('departments.department_detail', dept_id=event.entity_id) }}" class="link-primary">#{{ event.entity_id }}</a>
+            {% else %}#{{ event.entity_id or '—' }}{% endif %}
+          </td>
+          <td style="font-size:12px;color:var(--text-muted)">
+            {% if event.details %}
+              {% for k, v in event.details.items() %}
+                <span>{{ k }}: <strong>{{ v }}</strong></span>
+              {% endfor %}
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="empty-state">No audit events yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
