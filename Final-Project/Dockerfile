@@ -16,6 +16,13 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY . .
 
+# Fix Windows CRLF line endings and make entrypoint executable
+RUN apt-get update && apt-get install -y --no-install-recommends dos2unix \
+    && dos2unix /app/entrypoint.sh \
+    && chmod +x /app/entrypoint.sh \
+    && apt-get purge -y dos2unix && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
 # Non-root user for security
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 RUN chown -R appuser:appgroup /app
