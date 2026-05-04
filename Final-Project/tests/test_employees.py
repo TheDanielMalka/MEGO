@@ -5,13 +5,13 @@ Flow:  create dept → create office → create employee → read → update →
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def dept_id(client):
     resp = client.post('/api/departments', json={'name': 'TestDept', 'budget': 999999})
     return resp.get_json()['id']
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def office_id(client):
     resp = client.post('/api/offices', json={'floor': 5, 'room_number': 'TEST-501', 'capacity': 20})
     return resp.get_json()['id']
